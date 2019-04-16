@@ -138,12 +138,8 @@
             stroke: "#000",
             strokeWidth: d
           });
-        var t1 = svg.paper.text(x + (width - d) / 2 + 10, y, "IN");
-        var t2 = svg.paper.text(
-          x + (width - d) / 2 + 10,
-          y + height + 12,
-          "OUT"
-        );
+        var t1 = svg.paper.text(x + (width - d) / 2 + 10, y, " ");
+        var t2 = svg.paper.text(x + (width - d) / 2 + 10, y + height + 12, " ");
         var circle1 = svg.paper.circle(
           x + (width - d) / 2 - 10,
           y + height + 9,
@@ -186,7 +182,7 @@
           stroke: "#000",
           strokeWidth: 5
         });
-        var tag = svg.paper.text(x + (width - d) / 2 + 10, y, "IN");
+        var tag = svg.paper.text(x + (width - d) / 2 + 10, y, " ");
         var circle1 = svg.paper
           .circle(x + (width - d) / 2 - 10, y - 8, 7)
           .attr({
@@ -426,19 +422,21 @@
               var end = end_time * 1000;
               startOutput("fp", oil_type, start, oil_type, dur);
               startInput("tank", tank_num, start, oil_type, dur);
-              changeTankState(tank_num, 1, start); //占用
-              changeTankState(tank_num, 2, end); //等待
-              changeTankState(tank_num, 3, end + rt * 1000); //满
+              changeTankState(ds_num, tank_num, 1, start); //占用
+              changeTankState(ds_num, tank_num, 2, end); //等待
+              changeTankState(ds_num, tank_num, 3, end + rt * 1000); //满
               updateFPState(ds_num, oil_type, start, end);
+              updateTankState(ds_num, tank_num, start, end);
             } else {
               var dur = (end_time - start_time) * 1000;
               var start = start_time * 1000;
               var end = end_time * 1000;
               startOutput("tank", tank_num, start, oil_type, dur);
               startInput("ds", ds_num, start, oil_type, dur);
-              changeTankState(tank_num, 1, start); //占用
-              changeTankState(tank_num, 0, end); //空
-              updateDSState(ds_num, start, end);
+              changeTankState(ds_num, tank_num, 1, start); //占用
+              changeTankState(ds_num, tank_num, 0, end); //空
+              updateDSState(ds_num, oil_type, start, end);
+              updateTankState(ds_num, tank_num, start, end);
             }
           }
         }
@@ -488,9 +486,9 @@
       }
 
       //延时一定时间后改变油罐的状态
-      function changeTankState(num, state, start) {
+      function changeTankState(ds_num, tank_num, state, start) {
         window.setTimeout(function() {
-          var obj = tanks[num - 1].element[8];
+          var obj = tanks[tank_num - 1].element[8];
           if (state == 0) {
             //黑色(空罐)
             obj.attr({
@@ -515,14 +513,39 @@
         }, start);
       }
 
+      //更新罐的状态
+      function updateTankState(ds_num, tank_num, start, end) {
+        if (ds_num > 4) {
+          window.setTimeout(function() {
+            var obj = tanks[tank_num - 1].element[3];
+            obj.node.textContent = "Pipe " + (ds_num - 4).toFixed();
+          }, start);
+          window.setTimeout(function() {
+            var obj = tanks[tank_num - 1].element[3];
+            obj.node.textContent = "  ";
+          }, end);
+        } else {
+          window.setTimeout(function() {
+            var obj = tanks[tank_num - 1].element[4];
+            obj.node.textContent = "DS " + parseInt(ds_num);
+          }, start);
+          window.setTimeout(function() {
+            var obj = tanks[tank_num - 1].element[4];
+            obj.node.textContent = " ";
+          }, end);
+        }
+      }
+
       //更新塔的状态
-      function updateDSState(num, start, end) {
+      function updateDSState(num, oil_type, start, end) {
         window.setTimeout(function() {
           var obj = dss[num - 1].element[6];
           //红色(工作)
           obj.attr({
             fill: "red"
           });
+          var obj = dss[num - 1].element[3];
+          obj.node.textContent = "# " + parseInt(oil_type);
         }, start);
         window.setTimeout(function() {
           var obj = dss[num - 1].element[6];
@@ -530,6 +553,8 @@
           obj.attr({
             fill: "black"
           });
+          var obj = dss[num - 1].element[3];
+          obj.node.textContent = " ";
         }, end);
       }
 
