@@ -11,8 +11,14 @@
   </head>
 
   <body>
-    <svg id="svg" width="1200" height="700"></svg>
-    <input id="button1" type="button" class="zxx_api_button" value="运行" />
+    <div style="float: right;">
+      <input id="button1" type="button" class="zxx_api_button" value="开始" />
+      <input id="button2" type="button" class="zxx_api_button" value="暂停" />
+      <input id="button3" type="button" class="zxx_api_button" value="继续" />
+    </div>
+    <div style="float:left;">
+      <svg id="svg" width="1200" height="700"></svg>
+    </div>
     <script>
       var data = [
         "0.0002 0.0002 0 0.0048 0.0001 0 1.6000",
@@ -75,11 +81,8 @@
         "#f15a22"
       ];
 
-      //全局时间
-      t = 0;
-
       //绘制储油罐
-      function getFP(svg, x, y, width, height) {
+      function renderFP(svg, x, y, width, height) {
         var d = 5; //塔口直径
         var len = 20; //塔口长度
         var t = 5; //塔的厚度
@@ -107,11 +110,59 @@
           y + height + 12,
           "  "
         );
-        return svg.paper.g(d1, d2, d3, tag, e); // 注意这里元素的顺序是不一样的
+        //每个罐的容量按照50000计算
+        var step_length = (height - 2 * t) / 5;
+        var scale1 = svg.paper
+          .line(
+            x + width - 15,
+            y + step_length + t,
+            x + width - 5,
+            y + step_length + t
+          )
+          .attr({
+            stroke: "#000",
+            strokeWidth: 1
+          });
+        var scale2 = svg.paper
+          .line(
+            x + width - 15,
+            y + step_length * 2 + t,
+            x + width - 5,
+            y + step_length * 2 + t
+          )
+          .attr({
+            stroke: "#000",
+            strokeWidth: 1
+          });
+        var scale3 = svg.paper
+          .line(
+            x + width - 15,
+            y + step_length * 3 + t,
+            x + width - 5,
+            y + step_length * 3 + t
+          )
+          .attr({
+            stroke: "#000",
+            strokeWidth: 1
+          });
+        var scale4 = svg.paper
+          .line(
+            x + width - 15,
+            y + step_length * 4 + t,
+            x + width - 5,
+            y + step_length * 4 + t
+          )
+          .attr({
+            stroke: "#000",
+            strokeWidth: 1
+          });
+        return svg.paper
+          .g(d1, d2, d3, tag, e, scale1, scale2, scale3, scale4)
+          .data("t", t); // 存储罐的厚度
       }
 
       //绘制油罐
-      function getTank(svg, x, y, width, height) {
+      function renderTank(svg, x, y, width, height) {
         var d = 5; //罐口直径
         var len = 20; //罐口长度
         var t = 5; //罐的厚度
@@ -140,28 +191,84 @@
           });
         var t1 = svg.paper.text(x + (width - d) / 2 + 10, y, " ");
         var t2 = svg.paper.text(x + (width - d) / 2 + 10, y + height + 12, " ");
-        var circle1 = svg.paper.circle(
-          x + (width - d) / 2 - 10,
-          y + height + 9,
-          7
-        );
-        var circle2 = svg.paper.circle(
-          x + (width - d) / 2 - 10,
-          y + height + 9,
-          5
-        );
-        //设置信号灯的颜色
-        circle1.attr({
-          fill: "gray"
-        });
-        circle2.attr({
-          fill: "black"
-        });
-        return svg.paper.g(c1, c2, c3, t1, t2, l1, l2, circle1, circle2); // 注意这里元素的顺序是不一样的
+        var circle1 = svg.paper
+          .circle(x + (width - d) / 2 - 10, y + height + 9, 7)
+          .attr({
+            fill: "gray"
+          });
+        var circle2 = svg.paper
+          .circle(x + (width - d) / 2 - 10, y + height + 9, 5)
+          .attr({
+            fill: "black"
+          });
+
+        //每个罐的容量按照50000计算
+        var step_length = (height - 2 * t) / 5;
+        var scale1 = svg.paper
+          .line(
+            x + width - 15,
+            y + step_length + t,
+            x + width - 5,
+            y + step_length + t
+          )
+          .attr({
+            stroke: "#000",
+            strokeWidth: 1
+          });
+        var scale2 = svg.paper
+          .line(
+            x + width - 15,
+            y + step_length * 2 + t,
+            x + width - 5,
+            y + step_length * 2 + t
+          )
+          .attr({
+            stroke: "#000",
+            strokeWidth: 1
+          });
+        var scale3 = svg.paper
+          .line(
+            x + width - 15,
+            y + step_length * 3 + t,
+            x + width - 5,
+            y + step_length * 3 + t
+          )
+          .attr({
+            stroke: "#000",
+            strokeWidth: 1
+          });
+        var scale4 = svg.paper
+          .line(
+            x + width - 15,
+            y + step_length * 4 + t,
+            x + width - 5,
+            y + step_length * 4 + t
+          )
+          .attr({
+            stroke: "#000",
+            strokeWidth: 1
+          });
+        return svg.paper
+          .g(
+            c1,
+            c2,
+            c3,
+            t1,
+            t2,
+            l1,
+            l2,
+            circle1,
+            circle2,
+            scale1,
+            scale2,
+            scale3,
+            scale4
+          )
+          .data("t", t); // 存储罐的厚度
       }
 
       //绘制蒸馏塔
-      function getDS(svg, x, y, width, height) {
+      function renderDS(svg, x, y, width, height) {
         var d = 5; //塔口直径
         var len = 20; //塔口长度
         var t = 5; //塔的厚度
@@ -193,11 +300,71 @@
           .attr({
             fill: "black"
           });
-        return svg.paper.g(d1, d2, d3, tag, e, circle1, circle2); // 注意这里元素的顺序是不一样的
+        //每个罐的容量按照50000计算
+        var step_length = (height - 2 * t) / 5;
+        var scale1 = svg.paper
+          .line(
+            x + width - 15,
+            y + step_length + t,
+            x + width - 5,
+            y + step_length + t
+          )
+          .attr({
+            stroke: "#000",
+            strokeWidth: 1
+          });
+        var scale2 = svg.paper
+          .line(
+            x + width - 15,
+            y + step_length * 2 + t,
+            x + width - 5,
+            y + step_length * 2 + t
+          )
+          .attr({
+            stroke: "#000",
+            strokeWidth: 1
+          });
+        var scale3 = svg.paper
+          .line(
+            x + width - 15,
+            y + step_length * 3 + t,
+            x + width - 5,
+            y + step_length * 3 + t
+          )
+          .attr({
+            stroke: "#000",
+            strokeWidth: 1
+          });
+        var scale4 = svg.paper
+          .line(
+            x + width - 15,
+            y + step_length * 4 + t,
+            x + width - 5,
+            y + step_length * 4 + t
+          )
+          .attr({
+            stroke: "#000",
+            strokeWidth: 1
+          });
+        return svg.paper
+          .g(
+            d1,
+            d2,
+            d3,
+            tag,
+            e,
+            circle1,
+            circle2,
+            scale1,
+            scale2,
+            scale3,
+            scale4
+          )
+          .data("t", t); // 存储罐的厚度
       }
 
       //绘制管道
-      function getPipeline(svg, x, y, width, height) {
+      function renderPipe(svg, x, y, width, height) {
         var bus1 = svg.paper.line(x, y, x + width, y).attr({
           stroke: "#000",
           strokeWidth: 5
@@ -216,20 +383,21 @@
       }
 
       //该方法主要是为了简化旋转操作
-      function getRenderObject(svg, type, x, y, centX, centY) {
+      function renderObject(svg, type, x, y, centX, centY) {
         var result = {};
         var width = (centX - x) * 2;
         var height = (centY - y) * 2;
 
         if (type == "tank") {
-          result.element = getTank(svg, x, y, width, height);
+          result.element = renderTank(svg, x, y, width, height);
         } else if (type == "ds") {
-          result.element = getDS(svg, x, y, width, height);
+          result.element = renderDS(svg, x, y, width, height);
         } else if (type == "pipe") {
-          result.element = getPipeline(svg, x, y, width, height);
+          result.element = renderPipe(svg, x, y, width, height);
         } else if (type == "fp") {
-          result.element = getFP(svg, x, y, width, height);
+          result.element = renderFP(svg, x, y, width, height);
         }
+
         result.type = type;
         result.x = x;
         result.y = y;
@@ -240,14 +408,7 @@
 
       //复制对象(和原始对象重叠)
       function cloneRenderObject(svg, obj) {
-        return getRenderObject(
-          svg,
-          obj.type,
-          obj.x,
-          obj.y,
-          obj.centX,
-          obj.centY
-        ); //obj.element.clone();
+        return renderObject(svg, obj.type, obj.x, obj.y, obj.centX, obj.centY); //obj.element.clone();
       }
 
       //移动
@@ -273,64 +434,64 @@
       }
 
       //注油
-      function oilInput(groupObj, clonum, time) {
+      function oilInput(groupObj, oil_type, time, vol) {
         var refObj = groupObj.element[1]; //参照物
         var svgObj = groupObj.element[2];
 
-        svgObj.animate(
-          {
-            fill: colors[clonum]
-          },
-          0,
-          mina.bounce
-        );
+        svgObj.attr({
+          fill: colors[oil_type - 1]
+        });
 
         var locations = refObj.getBBox();
         var old_x = locations.x;
         var old_y = locations.y;
         var old_width = locations.width;
         var old_height = locations.height;
+        var new_height = old_height * (vol / 50000);
 
         Snap.animate(
           old_y + old_height,
-          old_y,
+          old_y + old_height - new_height,
           function(val) {
             svgObj.attr({
               y: val,
               height: old_y + old_height - val
             });
+            if (val == old_y + old_height - new_height) {
+              log();
+            }
           },
           time
         );
       }
 
       //抽油
-      function oilOutput(groupObj, oil_type, time) {
+      function oilOutput(groupObj, oil_type, time, vol) {
         var refObj = groupObj.element[1]; //参照物
         var svgObj = groupObj.element[2];
 
-        svgObj.animate(
-          {
-            fill: colors[oil_type]
-          },
-          0,
-          mina.bounce
-        );
+        svgObj.attr({
+          fill: colors[oil_type - 1]
+        });
 
         var locations = refObj.getBBox();
         var old_x = locations.x;
         var old_y = locations.y;
         var old_width = locations.width;
         var old_height = locations.height;
+        var new_height = old_height * (vol / 50000);
 
         Snap.animate(
-          old_y,
+          old_y + old_height - new_height,
           old_y + old_height,
           function(val) {
             svgObj.attr({
               y: val,
               height: old_y + old_height - val
             });
+            if (val == old_y + old_height) {
+              log();
+            }
           },
           time
         );
@@ -339,15 +500,14 @@
       var rt = 4; //驻留时间
       var svg = Snap("#svg");
       var collection = [];
-      var fp = getRenderObject(svg, "fp", 50, 0, 90, 75);
-      var tank = getRenderObject(svg, "tank", 50, 50, 90, 125);
-      var ds = getRenderObject(svg, "ds", 100, 200, 160, 300);
-      var pipe = getRenderObject(svg, "pipe", 40, 12, 540, 20);
+      var fp = renderObject(svg, "fp", 50, 0, 90, 75);
+      var tank = renderObject(svg, "tank", 50, 50, 90, 125);
+      var ds = renderObject(svg, "ds", 100, 200, 160, 300);
+      var pipe = renderObject(svg, "pipe", 40, 12, 540, 20);
       collection.push(fp);
       collection.push(tank);
       collection.push(ds);
       collection.push(pipe);
-      var global_clock = svg.paper.text(1100, 650, "系统时间：0");
 
       //FP2~11
       var offset = 95;
@@ -411,7 +571,8 @@
           var start_time = (parseFloat(arr[2]) * 10000).toFixed(2);
           var end_time = (parseFloat(arr[3]) * 10000).toFixed(2);
           var oil_type = (parseFloat(arr[4]) * 10000).toFixed(2);
-          //var vol = (parseFloat(arr[6]) * 10000).toFixed(2);//原油体积
+          var speed = parseInt(arr[5] * 10000);
+          var vol = (parseFloat(arr[6]) * 10000).toFixed(2); //原油体积
 
           if (tank_num == 0) {
             continue; //停运
@@ -420,19 +581,24 @@
               var dur = (end_time - start_time) * 1000;
               var start = start_time * 1000;
               var end = end_time * 1000;
-              startOutput("fp", oil_type, start, oil_type, dur);
-              startInput("tank", tank_num, start, oil_type, dur);
+              startOutput("fp", oil_type, start, oil_type, dur, vol);
+              startInput("tank", tank_num, start, oil_type, dur, vol);
               changeTankState(ds_num, tank_num, 1, start); //占用
               changeTankState(ds_num, tank_num, 2, end); //等待
               changeTankState(ds_num, tank_num, 3, end + rt * 1000); //满
               updateFPState(ds_num, oil_type, start, end);
               updateTankState(ds_num, tank_num, start, end);
             } else {
+              //初始库存，则更新供油罐中原油量
+              if (speed == 0) {
+                updateInitOil(tank_num, oil_type, vol);
+                changeTankState(ds_num, tank_num, 3, 0); //满
+              }
               var dur = (end_time - start_time) * 1000;
               var start = start_time * 1000;
               var end = end_time * 1000;
-              startOutput("tank", tank_num, start, oil_type, dur);
-              startInput("ds", ds_num, start, oil_type, dur);
+              startOutput("tank", tank_num, start, oil_type, dur, vol);
+              startInput("ds", ds_num, start, oil_type, dur, vol);
               changeTankState(ds_num, tank_num, 1, start); //占用
               changeTankState(ds_num, tank_num, 0, end); //空
               updateDSState(ds_num, oil_type, start, end);
@@ -440,27 +606,45 @@
             }
           }
         }
-        var int = self.setInterval("clock()", 1000);
       };
 
-      //更新计时
-      function clock() {
-        t = t + 1;
-        global_clock.node.textContent = "系统时间：" + t;
+      //日志记录
+      function log() {
+        alert("ok");
+      }
+
+      //渲染初始时仓库中原油
+      function updateInitOil(tank_num, oil_type, vol) {
+        var refObj = tanks[tank_num - 1].element[1]; //参照物
+        var svgObj = tanks[tank_num - 1].element[2];
+        var ledObj = tanks[tank_num - 1].element[2]; //led
+
+        var locations = refObj.getBBox();
+        var old_x = locations.x;
+        var old_y = locations.y;
+        var old_width = locations.width;
+        var old_height = locations.height;
+        var new_height = old_height * (vol / 50000);
+
+        svgObj.attr({
+          fill: colors[oil_type - 1],
+          y: old_y + old_height - new_height,
+          height: new_height
+        });
       }
 
       //封装setTimeout延时方法，避免循环问题
-      function startOutput(type, num, start, oil_type, dur) {
+      function startOutput(type, num, start, oil_type, dur, vol) {
         window.setTimeout(function() {
           if (type == "fp") {
             var obj = fps[num - 1];
-            oilOutput(obj, oil_type - 1, dur);
+            oilOutput(obj, oil_type, dur, vol);
           } else if (type == "tank") {
             var obj = tanks[num - 1];
-            oilOutput(obj, oil_type - 1, dur);
+            oilOutput(obj, oil_type, dur, vol);
           } else if (type == "ds") {
             var obj = dss[num - 1];
-            oilOutput(obj, oil_type - 1, dur);
+            oilOutput(obj, oil_type, dur, vol);
           } else {
             console.log("类型错误!");
           }
@@ -468,17 +652,17 @@
       }
 
       //封装setTimeout延时方法，避免循环问题
-      function startInput(type, num, start, oil_type, dur) {
+      function startInput(type, num, start, oil_type, dur, vol) {
         window.setTimeout(function() {
           if (type == "fp") {
             var obj = fps[num - 1];
-            oilInput(obj, oil_type - 1, dur);
+            oilInput(obj, oil_type, dur, vol);
           } else if (type == "tank") {
             var obj = tanks[num - 1];
-            oilInput(obj, oil_type - 1, dur);
+            oilInput(obj, oil_type, dur, vol);
           } else if (type == "ds") {
             var obj = dss[num - 1];
-            oilInput(obj, oil_type - 1, dur);
+            oilInput(obj, oil_type, dur, vol);
           } else {
             console.log("类型错误!");
           }
