@@ -13,8 +13,6 @@
   <body>
     <div style="float: right;">
       <input id="button1" type="button" class="zxx_api_button" value="开始" />
-      <input id="button2" type="button" class="zxx_api_button" value="暂停" />
-      <input id="button3" type="button" class="zxx_api_button" value="继续" />
     </div>
     <div style="float:left;">
       <svg id="svg" width="1200" height="700"></svg>
@@ -84,7 +82,7 @@
       //绘制储油罐
       function renderFP(svg, x, y, width, height) {
         var d = 5; //塔口直径
-        var len = 20; //塔口长度
+        var len = 18; //塔口长度
         var t = 5; //塔的厚度
         var d1 = svg.paper.rect(x, y, width, height, 10).attr({
           fill: "grey"
@@ -179,7 +177,7 @@
       //绘制油罐
       function renderTank(svg, x, y, width, height) {
         var d = 5; //罐口直径
-        var len = 20; //罐口长度
+        var len = 18; //罐口长度
         var t = 5; //罐的厚度
         var c1 = svg.paper.rect(x, y, width, height, 10).attr({
           fill: "grey"
@@ -300,7 +298,7 @@
       //绘制蒸馏塔
       function renderDS(svg, x, y, width, height) {
         var d = 5; //塔口直径
-        var len = 20; //塔口长度
+        var len = 18; //塔口长度
         var t = 5; //塔的厚度
         var d1 = svg.paper.rect(x, y, width, height, 10).attr({
           fill: "grey"
@@ -395,28 +393,18 @@
 
       //绘制管道
       function renderPipe(svg, x, y, width, height) {
-        var bus1 = svg.paper.line(x, y, x + width, y).attr({
+        var bus = svg.paper.rect(x, y, width, height).attr({
           stroke: "#000",
+          fill: "white",
           strokeWidth: 5
         });
-        var bus2 = svg.paper
-          .line(x + width / 2, y, x + width / 2, y + height)
-          .attr({
-            stroke: "#000",
-            strokeWidth: 10
-          });
-        var bus3 = svg.paper.line(x, y + height, x + width, y + height).attr({
-          stroke: "#000",
-          strokeWidth: 5
-        });
-        return svg.paper.g(bus1, bus2, bus3);
+
+        return svg.paper.g(bus);
       }
 
       //该方法主要是为了简化旋转操作
-      function renderObject(svg, type, x, y, centX, centY) {
+      function renderObject(svg, type, x, y, width, height) {
         var result = {};
-        var width = (centX - x) * 2;
-        var height = (centY - y) * 2;
 
         if (type == "tank") {
           result.element = renderTank(svg, x, y, width, height);
@@ -429,27 +417,7 @@
         }
 
         result.type = type;
-        result.x = x;
-        result.y = y;
-        result.centX = x + width / 2;
-        result.centY = y + height / 2;
         return result;
-      }
-
-      //复制对象(和原始对象重叠)
-      function cloneRenderObject(svg, obj) {
-        return renderObject(svg, obj.type, obj.x, obj.y, obj.centX, obj.centY); //obj.element.clone();
-      }
-
-      //移动
-      function moveRenderObject(obj, right, down) {
-        var m = new Snap.Matrix();
-        m.translate(obj.x + right, obj.y + down);
-        obj.element.transform(m);
-        obj.x = obj.x + right;
-        obj.y = obj.y + down;
-        obj.centX = obj.centX + right;
-        obj.centY = obj.centY + down;
       }
 
       //按照类型查找对象
@@ -531,21 +499,39 @@
       var rt = 4; //驻留时间
       var svg = Snap("#svg");
       var collection = [];
-      var fp = renderObject(svg, "fp", 50, 0, 90, 75);
-      var tank = renderObject(svg, "tank", 50, 50, 90, 125);
-      var ds = renderObject(svg, "ds", 100, 200, 160, 300);
-      var pipe = renderObject(svg, "pipe", 40, 12, 540, 20);
+      var fp_width = 80;
+      var fp_height = 100;
+      var tank_width = 80;
+      var tank_height = 100;
+      var ds_width = 160;
+      var ds_height = 200;
+      var heights = [0, 250, 500];
+      var fp = renderObject(svg, "fp", 0, heights[0], fp_width, fp_height);
+      var tank = renderObject(
+        svg,
+        "tank",
+        0,
+        heights[1],
+        tank_width,
+        tank_height
+      );
+      var ds = renderObject(svg, "ds", 0, heights[2], ds_width, ds_height);
       collection.push(fp);
       collection.push(tank);
       collection.push(ds);
-      collection.push(pipe);
 
       //FP2~11
       var offset = 95;
       for (i = 1; i <= 10; i++) {
         var tmp = i * offset;
-        var cloneObj = cloneRenderObject(svg, fp);
-        moveRenderObject(cloneObj, tmp, 0);
+        var cloneObj = renderObject(
+          svg,
+          "fp",
+          tmp,
+          heights[0],
+          fp_width,
+          fp_height
+        );
         collection.push(cloneObj);
       }
 
@@ -553,42 +539,195 @@
       var offset = 95;
       for (i = 1; i <= 10; i++) {
         var tmp = i * offset;
-        var cloneObj = cloneRenderObject(svg, tank); //复制
-        moveRenderObject(cloneObj, tmp, 0); //平移
+        var cloneObj = renderObject(
+          svg,
+          "tank",
+          tmp,
+          heights[1],
+          tank_width,
+          tank_height
+        );
         collection.push(cloneObj);
       }
 
-      //pipe2
-      var pipe2 = cloneRenderObject(svg, pipe);
-      moveRenderObject(pipe2, 0, 205);
-      collection.push(pipe2);
-
       //DS2~DS4
-      var offset = 225;
+      var offset = 290;
       for (i = 1; i <= 3; i++) {
         var tmp = i * offset;
-        var cloneObj = cloneRenderObject(svg, ds); //复制
-        moveRenderObject(cloneObj, tmp, 0); //平移
+        var cloneObj = renderObject(
+          svg,
+          "ds",
+          tmp,
+          heights[2],
+          ds_width,
+          ds_height
+        );
         collection.push(cloneObj);
       }
 
       //获取group对象
       var tanks = selectObjectsByType(collection, "tank");
       var dss = selectObjectsByType(collection, "ds");
-      var pipes = selectObjectsByType(collection, "pipe");
       var fps = selectObjectsByType(collection, "fp");
 
-      for (i = 0; i < fps.length; i++) {
-        moveRenderObject(fps[i], 5, 50);
+      //pipe
+      var size = [20, 60];
+      var len =
+        tanks[0].element.getBBox().x +
+        tanks[tanks.length - 1].element.getBBox().x +
+        tanks[0].element.getBBox().width;
+      var pipe1 = renderObject(
+        svg,
+        "pipe",
+        len / 3,
+        (heights[0] + heights[1]) / 2 + size[1] / 2,
+        size[0],
+        size[1]
+      );
+      var pipe2 = renderObject(
+        svg,
+        "pipe",
+        (len * 2) / 3,
+        (heights[0] + heights[1]) / 2 + size[1] / 2,
+        size[0],
+        size[1]
+      );
+      var pipe3 = renderObject(
+        svg,
+        "pipe",
+        len / 2,
+        (heights[1] + heights[2]) / 2 + size[1] / 2,
+        size[0],
+        size[1]
+      );
+
+      //pipeline path
+      var paths = renderConnection(svg, pipe1, pipe2, pipe3, fps, tanks, dss);
+
+      //绘制所有管道的路径
+      function renderConnection(svg, pipe1, pipe2, pipe3, fps, tanks, dss) {
+        var p11 = [];
+        var p12 = [];
+        var p21 = [];
+        var p22 = [];
+        var p31 = [];
+        var p32 = [];
+        //将所有的fp和pipe1相连接
+        var px = pipe1.element.getBBox().cx;
+        var py = pipe1.element.getBBox().y;
+        for (i = 0; i < fps.length; i++) {
+          var fp = fps[i];
+          var x1 = fp.element.getBBox().cx;
+          var y1 = fp.element.getBBox().y + fp.element.getBBox().height;
+          var p = connect(
+            svg,
+            x1,
+            y1,
+            px,
+            py
+          );
+          p11.push(p);
+        }
+        //将所有的tank和pipe1相连接
+        var px = pipe1.element.getBBox().cx;
+        var py = pipe1.element.getBBox().y + pipe1.element.getBBox().height;
+        for (i = 0; i < tanks.length; i++) {
+          var tank = tanks[i];
+          var x1 = tank.element.getBBox().cx;
+          var y1 = tank.element.getBBox().y;
+          var p = connect(
+            svg,
+            px,
+            py,
+            x1,
+            y1
+          );
+          p12.push(p);
+        }
+
+        //将所有的fp和pipe2相连接
+        var px = pipe2.element.getBBox().cx;
+        var py = pipe2.element.getBBox().y;
+        for (i = 0; i < fps.length; i++) {
+          var fp = fps[i];
+          var x1 = fp.element.getBBox().cx;
+          var y1 = fp.element.getBBox().y + fp.element.getBBox().height;
+          var p = connect(
+            svg,
+            x1,
+            y1,
+            px,
+            py
+          );
+          p21.push(p);
+        }
+        //将所有的tank和pipe2相连接
+        var px = pipe2.element.getBBox().cx;
+        var py = pipe2.element.getBBox().y + pipe2.element.getBBox().height;
+        for (i = 0; i < tanks.length; i++) {
+          var tank = tanks[i];
+          var x1 = tank.element.getBBox().cx;
+          var y1 = tank.element.getBBox().y;
+          var p = connect(
+            svg,
+            px,
+            py,
+            x1,
+            y1
+          );
+          p22.push(p);
+        }
+
+        //将所有的tank和pipe3相连接
+        var px = pipe3.element.getBBox().cx;
+        var py = pipe3.element.getBBox().y;
+        for (i = 0; i < fps.length; i++) {
+          var tank = tanks[i];
+          var x1 = tank.element.getBBox().cx;
+          var y1 = tank.element.getBBox().y + tank.element.getBBox().height;
+          var p = connect(
+            svg,
+            x1,
+            y1,
+            px,
+            py
+          );
+          p31.push(p);
+        }
+        //将所有的ds和pipe3相连接
+        var px = pipe3.element.getBBox().cx;
+        var py = pipe3.element.getBBox().y + pipe3.element.getBBox().height;
+        for (i = 0; i < dss.length; i++) {
+          var ds = dss[i];
+          var x1 = ds.element.getBBox().cx;
+          var y1 = ds.element.getBBox().y;
+          var p = connect(
+            svg,
+            px,
+            py,
+            x1,
+            y1
+          );
+          p32.push(p);
+        }
+        var p = {};
+        p.p11 = p11;
+        p.p12 = p12;
+        p.p21 = p21;
+        p.p22 = p22;
+        p.p31 = p31;
+        p.p32 = p32;
+
+        return [p11, p12, p21, p22, p31, p32];
       }
-      for (i = 0; i < tanks.length; i++) {
-        moveRenderObject(tanks[i], 5, 155);
-      }
-      for (i = 0; i < pipes.length; i++) {
-        moveRenderObject(pipes[i], 40, 195);
-      }
-      for (i = 0; i < dss.length; i++) {
-        moveRenderObject(dss[i], 0, 60);
+
+      function connect(svg, x1, y1, x2, y2) {
+        var cpath = createCPath(x1, y1, x2, y2);
+        var c = svg.paper.path(cpath).attr({
+          strokeWidth: 5,
+          fill: "transparent"
+        });
+        return c;
       }
 
       //事件
@@ -619,6 +758,27 @@
               changeTankState(ds_num, tank_num, 3, end + rt * 1000); //满
               updateFPState(ds_num, oil_type, start, end);
               updateTankState(ds_num, tank_num, start, end);
+              if (ds_num == 5) {
+                updatePipeConnect(
+                  svg,
+                  1,
+                  oil_type,
+                  oil_type,
+                  tank_num,
+                  start,
+                  end
+                );
+              } else if (ds_num == 6) {
+                updatePipeConnect(
+                  svg,
+                  2,
+                  oil_type,
+                  oil_type,
+                  tank_num,
+                  start,
+                  end
+                );
+              }
             } else {
               //初始库存，则更新供油罐中原油量
               if (speed == 0) {
@@ -634,10 +794,50 @@
               changeTankState(ds_num, tank_num, 0, end); //空
               updateDSState(ds_num, oil_type, start, end);
               updateTankState(ds_num, tank_num, start, end);
+              updatePipeConnect(svg, 3, oil_type, tank_num, ds_num, start, end);
             }
           }
         }
       };
+
+      //更新管道连接状态
+      function updatePipeConnect(svg, pipe, oil_type, s, e, start, end) {
+        window.setTimeout(function() {
+          var p = pipe - 1;
+          var tmp1 = paths[2 * p];
+          var tmp2 = paths[2 * p + 1];
+          tmp1[s - 1].attr({
+            stroke: colors[oil_type - 1]
+          });
+          tmp2[e - 1].attr({
+            stroke: colors[oil_type - 1]
+          });
+        }, start);
+        window.setTimeout(function() {
+          var p = pipe - 1;
+          var tmp1 = paths[2 * p];
+          var tmp2 = paths[2 * p + 1];
+          tmp1[s - 1].attr({
+            stroke: "transparent"
+          });
+          tmp2[e - 1].attr({
+            stroke: "transparent"
+          });
+        }, end);
+      }
+
+      //绘制三次赛贝尔曲线
+      function createCPath(x1, y1, x2, y2) {
+        var path = "M" + x1 + " " + y1 + " ";
+        var cx1 = x1;
+        var cy1 = (y1 + y2) / 2;
+        var cx2 = x2;
+        var cy2 = (y1 + y2) / 2;
+        var c = "C" + cx1 + " " + cy1 + "," + cx2 + " " + cy2 + ",";
+        path = path + c + x2 + " " + y2;
+        console.log(path);
+        return path;
+      }
 
       //渲染初始时仓库中原油
       function updateInitOil(tank_num, oil_type, vol) {
